@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 
+
+
 #include <deal.II/fe/fe_q.h>
 #include <deal.II/grid/grid_generator.h>
 #include <deal.II/lac/solver_cg.h>
@@ -18,26 +20,24 @@
 #include <deal.II/grid/grid_tools.h>
 #include <deal.II/numerics/vector_tools.h>
 
-// #include "../../feminist/calculation_core/src/blocks/general/domain/domain.h"
-// #include "../../feminist/calculation_core/src/blocks/general/laplacian/scalar/laplacian_scalar.h"
-// #include "../../feminist/calculation_core/src/blocks/general/source/scalar/source_scalar.h"
-// #include "../../feminist/calculation_core/src/blocks/general/boundary_value/boundary_value.h"
-// #include "../../feminist/calculation_core/src/blocks/general/assembler/assembler.h"
-// #include "../../feminist/calculation_core/src/blocks/general/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
-// #include "../../feminist/calculation_core/src/blocks/general/additional_tools/trivial_prepare_system_equations/trivial_prepare_system_equations.h"
-// #include "../../feminist/calculation_core/src/blocks/general/additional_tools/apply_boundary_value/scalar/apply_boundary_value_scalar.h"
-// #include "../../feminist/calculation_core/src/blocks/general/geometric_tools/geometric_tools.h"
-// #include "../../feminist/calculation_core/src/blocks/general/laplacian/vector/laplacian_vector.h"
-// #include "../../feminist/calculation_core/src/blocks/general/source/vector/source_vector.h"
+
 
 #include "../../../calculation_core/src/blocks/general/domain/domain.h"
-#include "../../../calculation_core/src/blocks/general/laplacian/scalar/laplacian_scalar.h"
-#include "../../../calculation_core/src/blocks/general/source/scalar/source_scalar.h"
-#include "../../../calculation_core/src/blocks/general/boundary_value/boundary_value.h"
-#include "../../../calculation_core/src/blocks/general/assembler/assembler.h"
 #include "../../../calculation_core/src/blocks/general/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
-#include "../../../calculation_core/src/blocks/general/additional_tools/trivial_prepare_system_equations/trivial_prepare_system_equations.h"
-#include "../../../calculation_core/src/blocks/general/additional_tools/apply_boundary_value/scalar/apply_boundary_value_scalar.h"
-#include "../../../calculation_core/src/blocks/general/geometric_tools/geometric_tools.h"
 #include "../../../calculation_core/src/blocks/general/laplacian/vector/laplacian_vector.h"
 #include "../../../calculation_core/src/blocks/general/source/vector/source_vector.h"
+
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/source/scalar/source_scalar.h"
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/prepare_system_equations_alternate/prepare_system_equations_alternate.h"
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/assembler/assembler.h"
+
+#include "../../../calculation_core/src/blocks/special/elastic_problem_tools/elastic_problem_tools.h"
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/source/vector/source_vector.h"
+
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/calculate_meta_coefficients/calculate_meta_coefficients.h"
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/stress_calculator/stress_calculator.h"
+#include "../../../calculation_core/src/blocks/special/problem_on_cell/deform_calculator/deform_calculator.h"
+
+
+#include "../../../calculation_core/src/blocks/general/gaus_solver/gaus_solver.h"

@@ -1,9 +1,7 @@
 #include "pch.h"
 
-#include "../../feminist/calculation_core/src/blocks/general/additional_tools/apply_boundary_value/vector/apply_boundary_value_vector.h"
 #include "../../feminist/calculation_core/src/blocks/general/grid_generator/grid_generator.h"
 
-#include "../../feminist/calculation_core/src/blocks/special/heat_conduction_problem_tools/heat_conduction_problem_tools.h"
 #include "../../feminist/calculation_core/src/blocks/special/elastic_problem_tools/elastic_problem_tools.h"
 
 // #include "../../../calculation_core/src/blocks/general/additional_tools/apply_boundary_value/vector/apply_boundary_value_vector.h"
