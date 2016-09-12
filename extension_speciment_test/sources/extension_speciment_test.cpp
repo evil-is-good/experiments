@@ -1,5 +1,11 @@
 #include "pch.h"
 
+// #include "../../feminist/calculation_core/src/blocks/general/additional_tools/apply_boundary_value/vector/apply_boundary_value_vector.h"
+// #include "../../feminist/calculation_core/src/blocks/general/grid_generator/grid_generator.h"
+//
+// #include "../../feminist/calculation_core/src/blocks/special/heat_conduction_problem_tools/heat_conduction_problem_tools.h"
+// #include "../../feminist/calculation_core/src/blocks/special/elastic_problem_tools/elastic_problem_tools.h"
+
 #include "../../../calculation_core/src/blocks/general/additional_tools/apply_boundary_value/vector/apply_boundary_value_vector.h"
 #include "../../../calculation_core/src/blocks/general/grid_generator/grid_generator.h"
 
@@ -365,12 +371,14 @@ arr<dbl, 3> solve_cpeciment_extension_test (
         return value;};
     bound[0].boundary_id   = 1;
     bound[0].boundary_type = TBV::Neumann;
+    // bound[0].boundary_type = TBV::Dirichlet;
     bound[1].function      = [P, d] (const dealii::Point<3> &p) {
         arr<dbl, 3> value = {0.0, 0.0, 0.0};
         value[d] = -P;
         return value;};
     bound[1].boundary_id   = 2;
     bound[1].boundary_type = TBV::Neumann;
+    // bound[1].boundary_type = TBV::Dirichlet;
 
     for (auto b : bound)
         ATools ::apply_boundary_value_vector<3> (b) .to_slae (slae, domain);

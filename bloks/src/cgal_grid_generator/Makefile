@@ -1,11 +1,11 @@
 #===============================================================================
 #
-#  TypeProject: exe
+#  TypeProject: obj
 #  Description:
 #
 #===============================================================================
 
-ProjectName := extension_speciment_test
+ProjectName := cgal_grid_generator
 
 #==============================CONFIGURATION: debug/release/miscellaneous...===#
 
@@ -13,7 +13,7 @@ ConfigurationName := release
 
 #================================================================DIRECTORIES===#
 
-ProjectDir := /home/primat/projects/experiments/extension_speciment_test
+ProjectDir := /home/primat/projects/experiments/bloks/src/cgal_grid_generator
 
 #==================================================INCDIRS (Format: IncDir*)===#
 
@@ -25,6 +25,7 @@ IncDirTBB      = $(SupDirDealII)/contrib/tbb/tbb30_104oss/include
 #==================================================LIBDIRS (Format: LibDir*)===#
 
 LibDirDealII = $(SupDirDealII)/lib
+#LibDirZLib   = /usr/lib/ruby/1.9.1/x86_64-linux
 
 #===================================================USER DIRS (Format UDir*)===#
 
@@ -32,27 +33,22 @@ Udir =
 
 #===========================================SUPPORTING DIRS (Format SupDir*)===#
 
-SupDirHome   = /home/primat
 SupDirDealII = /home/primat/deal.II
+SupDirHome   = /home/primat
 
 #======================================================================FILES===#
 
-Executable := $(ProjectName).exe
+Executable := $(ProjectName).o
 
 Sources    := $(ProjectName).cpp
 
 DebugLibraryes    := deal_II.g tbb_debug
 
-# ReleaseLibraryes  := tbb gomp pthread gmpxx mpfr boost_thread-mt z
-
-ReleaseLibraryes  := deal_II tbb gomp pthread CGAL_Core CGAL gmpxx mpfr gmp boost_thread z
-
-# StaticLibs := /usr/lib/libCGAL_Core.a /usr/lib/libCGAL.a /usr/lib/x86_64-linux-gnu/libgmp.a /home/primat/deal.II/deal.II_bo_share/lib/libdeal_II.a 
-StaticLibs := 
+ReleaseLibraryes  := deal_II tbb gomp pthread CGAL_Core CGAL gmpxx mpfr gmp boost_thread-mt z stdc++
 
 #=================================================================BASE FLAGS===#
 
-DebugFlagsC   := -O2 -gstabs+ -pipe -std=c++11
+DebugFlagsC   := -O0 -gstabs+ -pipe -std=c++11
 
 ReleaseFlagsC := -std=c++11 -O2 -pipe -fopenmp -frounding-math
 
@@ -68,11 +64,12 @@ AnalysisFlags := #-Weffc++ \
 #=================================================================USER FLAGS===#
 
 UserFlags :=
+CGAL_libs :=
 
 #==============================================================================#
 
-ObjDir     := $(ProjectDir)/obj
-SourcesDir := $(ProjectDir)/sources
+ObjDir     := $(ProjectDir)
+SourcesDir := $(ProjectDir)
 
 CFlags :=
 LFlags :=
@@ -97,32 +94,28 @@ LibDirs := $(addprefix -L, $(buff2)) -L.
 
 
 Objects    := $(patsubst %.cpp, %.o, $(Sources))
-Objects    := $(addprefix $(ProjectDir)/obj/, $(Objects))
+Objects    := $(addprefix $(ProjectDir), $(Objects))
 
-Sources    := $(addprefix $(ProjectDir)/sources/, $(Sources))
+Sources    := $(addprefix $(ProjectDir), $(Sources))
 
 Executable := $(addprefix $(ProjectDir)/$(ConfigurationName)/, $(Executable)) 
 
 #main:
 #	@echo $(ObjDir)/Test1.o
-	
-$(Executable): $(Objects)
-	$(CXX) $(LFlags) $^ $(StaticLibs) -o $@ $(LibDirs) $(Libs) 2> /home/primat/projects/code.log 
 
-$(ObjDir)/%.o: $(SourcesDir)/%.cpp
-	mkdir -p $(dir $@)
-	$(CXX) -c $(CFlags) $< -o $@ $(IncDirs) $(LibDirs) $(Libs) 2> /home/primat/projects/code.log 
+$(ProjectName).o: $(ProjectName).cpp
+	g++ -c $(CFlags) $< -o ../../obj/$@ $(IncDirs) $(LibDirs) $(Libs) 2> ~/projects/code.log 
 
 analysis: $(Sources)
-	$(CXX) $(AnalysisFlags) $^ $(IncDirs) $(LibDirs) $(Libs)  
-
-run:
-	$(Executable)
+	$(CXX) $(AnalysisFlags) $^ $(IncDirs) $(LibDirs) $(Libs)
 
 clean:
-	$(RM)  $(Objects) $(Executable)
-
-chead:
-	$(CXX) $(CFlags) -c pch.h $(IncDirs) $(LibDirs) $(Libs)
-
-.PHONI: run clean
+	$(RM) $(Objects) $(Executable)
+	
+# cgal: 
+# 	$(CXX) $(CFlags) cgal.cpp -o cgal.exe $(IncDirs) $(LibDirs) $(Libs) 2> ~/projects/code.log
+# 
+# tria: 
+# 	$(CXX) $(CFlags) tria.cpp -o tria.exe $(IncDirs) $(LibDirs) $(Libs) 2> ~/projects/code.log
+	
+.PHONI: run clean cgal tria
