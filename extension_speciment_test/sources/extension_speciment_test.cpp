@@ -450,7 +450,7 @@ int main()
     cst n_slices = 5;
     cst n_ref = 6;
     cst n_cell_ref = 2;
-    cdbl R = sqrt(0.2 / M_PI);//0.45;
+    cdbl R = sqrt(0.4 / M_PI);//0.45;
     cdbl H = 10.0;
     GridGenerator::gen_cylinder_true_ordered_speciment(domain.grid, R, n_cell_ref, n_ref, n_slices, H);
     // gen_laminate(domain.grid, 0.5, n_slices, n_ref);

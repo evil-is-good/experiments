@@ -107,7 +107,7 @@ Executable := $(addprefix $(ProjectDir)/$(ConfigurationName)/, $(Executable))
 #	@echo $(ObjDir)/Test1.o
 	
 $(Executable): $(Objects)
-	$(CXX) $(LFlags) $^ $(StaticLibs) -o $@ $(LibDirs) $(Libs) 2> /home/primat/projects/code.log 
+	$(CXX) $(LFlags) $^ /home/primat/projects/experiments/bloks/obj/cgal_grid_generator.o $(StaticLibs) -o $@ $(LibDirs) $(Libs) 2> /home/primat/projects/code.log 
 
 $(ObjDir)/%.o: $(SourcesDir)/%.cpp
 	mkdir -p $(dir $@)
@@ -123,6 +123,6 @@ clean:
 	$(RM)  $(Objects) $(Executable)
 
 chead:
-	$(CXX) $(CFlags) -c pch.h $(IncDirs) $(LibDirs) $(Libs)
+	$(CXX) $(CFlags) -c pch.h $(IncDirs) $(LibDirs) $(Libs) 2> /home/primat/projects/code.log
 
 .PHONI: run clean

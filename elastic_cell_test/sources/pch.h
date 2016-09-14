@@ -22,22 +22,16 @@
 
 
 
-#include "../../../calculation_core/src/blocks/general/domain/domain.h"
-#include "../../../calculation_core/src/blocks/general/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
-#include "../../../calculation_core/src/blocks/general/laplacian/vector/laplacian_vector.h"
-#include "../../../calculation_core/src/blocks/general/source/vector/source_vector.h"
+#include "../../feminist/calculation_core/src/blocks/general/domain/domain.h"
+#include "../../feminist/calculation_core/src/blocks/general/laplacian/vector/laplacian_vector.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/source/vector/source_vector.h"
+#include "../../feminist/calculation_core/src/blocks/general/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/prepare_system_equations_alternate/prepare_system_equations_alternate.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/assembler/assembler.h"
 
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/source/scalar/source_scalar.h"
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/prepare_system_equations_alternate/prepare_system_equations_alternate.h"
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/system_linear_algebraic_equations/system_linear_algebraic_equations.h"
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/assembler/assembler.h"
+#include "../../feminist/calculation_core/src/blocks/special/elastic_problem_tools/elastic_problem_tools.h"
 
-#include "../../../calculation_core/src/blocks/special/elastic_problem_tools/elastic_problem_tools.h"
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/source/vector/source_vector.h"
-
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/calculate_meta_coefficients/calculate_meta_coefficients.h"
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/stress_calculator/stress_calculator.h"
-#include "../../../calculation_core/src/blocks/special/problem_on_cell/deform_calculator/deform_calculator.h"
-
-
-#include "../../../calculation_core/src/blocks/general/gaus_solver/gaus_solver.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/calculate_meta_coefficients/calculate_meta_coefficients.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/stress_calculator/stress_calculator.h"
+#include "../../feminist/calculation_core/src/blocks/special/problem_on_cell/deform_calculator/deform_calculator.h"
