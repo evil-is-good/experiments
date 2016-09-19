@@ -21,6 +21,7 @@ IncDirProjects = $(SupDirHome)
 IncDirDealII   = $(SupDirDealII)/include
 IncDirBoost    = $(SupDirDealII)/contrib/boost-1.49.0/include
 IncDirTBB      = $(SupDirDealII)/contrib/tbb/tbb30_104oss/include 
+IncDirExperiments = $(SupDirHome)/projects/experiments
 
 #==================================================LIBDIRS (Format: LibDir*)===#
 

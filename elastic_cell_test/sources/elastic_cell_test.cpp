@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "../../feminist/calculation_core/src/blocks/general/grid_generator/grid_generator.h"
+#include "../../bloks/src/grid_generator/grid_generator.h"
 
 ATools::FourthOrderTensor unphysical_to_physicaly (
         ATools::FourthOrderTensor &unphys)
@@ -450,157 +451,53 @@ void solve_approx_cell_elastic_problem (cdbl E_i, cdbl pua_i, cdbl E_m, cdbl pua
                 "stress_slice_yyx.gpd", z, 0.5);
 };
 
-namespace CGALGridGenerator
+void set_ball_true(dealii::Triangulation< 3 > &triangulation, 
+        const double radius, const size_t n_refine)
 {
-extern void set_grid(
-        dealii::Triangulation< 2 >&,
-        vec<prmt::Point<2>>,
-        vec<vec<prmt::Point<2>>>,
-        vec<st>);
-extern int QWERTY;
-};
+    dealii::Point<3> center (0.5, 0.5, 0.5);
+    dealii::GridGenerator ::hyper_cube (triangulation, 0.0, 1.0);
+    triangulation .refine_global (n_refine);
 
-void give_line_without_end_point(
-        vec<prmt::Point<2>> &curve,
-        cst num_points,
-        prmt::Point<2> first,
-        prmt::Point<2> second)
-{
-    dbl dx = (second.x() - first.x()) / num_points;
-    dbl dy = (second.y() - first.y()) / num_points;
-    dbl x = first.x();
-    dbl y = first.y();
-    FOR_I(0, num_points - 0)
+    cdbl cell_size = 1.0 / std::pow(2.0, n_refine);
+    cdbl max_dist = std::sqrt(std::pow(cell_size, 2.0) * 3.0) / 2.0;
+
+    // auto face = tria2d.begin_active_face();
+    // auto endf = tria2d.end_face();
+    // for (; face != endf; ++face)
     {
-        curve .push_back (prmt::Point<2>(x, y)); 
-        x += dx;
-        y += dy;
-    };
-};
-
-void give_rectangle(
-        vec<prmt::Point<2>> &curve,
-        cst num_points_on_edge,
-        prmt::Point<2> first,
-        prmt::Point<2> second)
-{
-    give_line_without_end_point(curve, num_points_on_edge,
-            first,
-            prmt::Point<2>(first.x(), second.y()));
-
-    give_line_without_end_point(curve, num_points_on_edge,
-            prmt::Point<2>(first.x(), second.y()),
-            second);
-
-    give_line_without_end_point(curve, num_points_on_edge,
-            second,
-            prmt::Point<2>(second.x(), first.y()));
-
-    give_line_without_end_point(curve, num_points_on_edge,
-            prmt::Point<2>(second.x(), first.y()),
-            first);
-
-};
-
-void give_rectangle_with_border_condition(
-        vec<prmt::Point<2>> &curve,
-        vec<st> &type_edge,
-        const arr<st, 4> type_border,
-        cst num_points_on_edge,
-        const prmt::Point<2> first,
-        const prmt::Point<2> second)
-{
-    give_line_without_end_point(curve, num_points_on_edge,
-            first,
-            prmt::Point<2>(first.x(), second.y()));
-
-    give_line_without_end_point(curve, num_points_on_edge,
-            prmt::Point<2>(first.x(), second.y()),
-            second);
-
-    give_line_without_end_point(curve, num_points_on_edge,
-            second,
-            prmt::Point<2>(second.x(), first.y()));
-
-    give_line_without_end_point(curve, num_points_on_edge,
-            prmt::Point<2>(second.x(), first.y()),
-            first);
-
-    cst n_edge_on_border = curve.size() / 4;
-    // printf("type %d\n", n_edge_on_border);
-    type_edge.resize(curve.size());
-
-    FOR(i, 0, 4)
-        FOR(j, 0 + n_edge_on_border * i, n_edge_on_border + n_edge_on_border * i)
-        type_edge[j] = type_border[i];
-};
-
-void give_circ(
-        vec<prmt::Point<2>> &curve,
-        cst num_points_on_tip,
-        cdbl radius,
-        prmt::Point<2> center)
-{
-    cdbl angle_step_rad = 2.0 * M_PI / num_points_on_tip;
-    for (
-            dbl angle_rad = M_PI / 2.0; 
-            std::abs(angle_rad - 5.0 * (M_PI / 2.0)) > 1.e-8; 
-            angle_rad += angle_step_rad
-        )
-    {
-        dbl X = radius * cos(angle_rad) + center.x();
-        dbl Y = radius * sin(angle_rad) + center.y();
-        curve .push_back (prmt::Point<2>(X, Y)); 
-    };
-};
-
-void set_ring_cgal(dealii::Triangulation< 2 > &triangulation, 
-        const double radius, cst n_points_on_includ_border)
-{
-    vec<prmt::Point<2>> border;
-    vec<st> type_border;
-    give_rectangle_with_border_condition(
-            border,
-            type_border,
-            arr<st, 4>{1,3,2,4},
-            10,
-            prmt::Point<2>(0.0, 0.0), prmt::Point<2>(1.0, 1.0));
-    vec<vec<prmt::Point<2>>> inclusion(1);
-    dealii::Point<2> center (0.5, 0.5);
-    give_circ(inclusion[0], n_points_on_includ_border, radius, prmt::Point<2>(center));
-    CGALGridGenerator::set_grid(triangulation, border, inclusion, type_border);
-};
-
-void set_cylinder_cgal(dealii::Triangulation< 3 > &triangulation, 
-        const double radius, cst n_points_on_includ_border, cst n_slices)
-{
-    dealii::Triangulation<2> tria2d;
-
-    set_ring_cgal (tria2d, radius, n_points_on_includ_border); 
-    {
-        std::ofstream out ("grid-cgal.eps");
-        dealii::GridOut grid_out;
-        grid_out.write_eps (tria2d, out);
+        auto cell = triangulation .begin_active();
+        auto end_cell = triangulation .end();
+        for (; cell != end_cell; ++cell)
+        {
+            for (st i = 0; i < dealii::GeometryInfo<3>::vertices_per_cell; ++i)
+            {
+                auto p = cell->vertex(i);
+                cdbl r = center.distance(p); 
+                cdbl dist = std::abs(r - radius);
+                // cdbl dist = std::abs(center.distance(p) - R); 
+                if (dist < max_dist)
+                {
+                    cell->vertex(i) -= center;
+                    cell->vertex(i) *= radius/r;
+                    cell->vertex(i) += center;
+                };
+            };
+        };
     };
 
-    dealii::Point<2> center (0.5, 0.5);
     {
-        auto cell = tria2d .begin_active();
-        auto end_cell = tria2d .end();
+        auto cell = triangulation .begin_active();
+        auto end_cell = triangulation .end();
         for (; cell != end_cell; ++cell)
         {
             if (center.distance(cell->center()) < radius)
             {
                 cell->set_material_id(1);
-                //                puts("adf");
             }
             else
                 cell->set_material_id(0);
         };
     };
-
-    GridGenerator::extrude_triangulation (tria2d, n_slices, 1.0, triangulation);
-
 };
 
 int main()
@@ -609,11 +506,16 @@ int main()
     // CGALGridGenerator::QWERTY = 10;
     Domain<3> domain;
     cst n_ref = 4;
-    cdbl R = sqrt(0.7 / M_PI);//0.45;
+    // cdbl R = 0.415;//sqrt(0.7 / M_PI);//0.45;
+    cdbl R = sqrt(0.7 / M_PI) / 4.0;//0.45;
     cst n_slices = 5;
     cst n_p = 16;
     // GridGenerator::gen_cylinder_in_cube_true_ordered(domain.grid, R, n_ref, n_slices);
-    set_cylinder_cgal(domain.grid, R, n_p, n_slices);
+    vec<dealii::Point<2>> center;
+    center .push_back(dealii::Point<2>(0.5, 0.5));
+    arr<dbl, 3> size = {1.0, 1.0, 1.0};
+    GridGenerator::set_cylinder_in_rectangular_cgal(domain.grid, size, center, R, n_p, n_slices);
+    // set_ball_true (domain.grid, R, n_ref);
     cdbl Em = 0.6;
     cdbl Ei = 60.0;
     cdbl pm = 0.35;
@@ -622,6 +524,10 @@ int main()
     // cdbl Ei = 0.6;
     // cdbl pm = 0.25;
     // cdbl pi = 0.25;
+    // cdbl Em = 0.3;
+    // cdbl Ei = 60.0;
+    // cdbl pm = 0.45;
+    // cdbl pi = 0.2;
     solve_approx_cell_elastic_problem(Ei, pi, Em, pm, domain);
 
     return 0;

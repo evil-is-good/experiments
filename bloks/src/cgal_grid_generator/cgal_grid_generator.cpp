@@ -156,50 +156,50 @@ namespace CGALGridGenerator
             add_cell (arr<st, 4>{3, 1, 6, 4});
             add_cell (arr<st, 4>{6, 4, 5, 2});
         };
-        {
-            FILE *F;
-            F = fopen("tria.gpd", "w");
-            for (st i = 0; i < vertex_in_grid.size(); ++i)
-            {
-                fprintf(F, "%f %f 0.0\n", vertex_in_grid[i](0), vertex_in_grid[i](1));
-            };
-            fclose(F);
-        };
-        {
-            FILE *F;
-            F = fopen("9.gpd", "w");
-            fprintf (F, "%f %f 0.0\n",
-                    vertex_in_grid[cell_in_grid[9].vertices[0]](0),
-                    vertex_in_grid[cell_in_grid[9].vertices[0]](1));
-            fprintf (F, "%f %f 0.0\n",
-                    vertex_in_grid[cell_in_grid[9].vertices[1]](0),
-                    vertex_in_grid[cell_in_grid[9].vertices[1]](1));
-            fprintf (F, "%f %f 0.0\n",
-                    vertex_in_grid[cell_in_grid[9].vertices[2]](0),
-                    vertex_in_grid[cell_in_grid[9].vertices[2]](1));
-            fprintf (F, "%f %f 0.0\n",
-                    vertex_in_grid[cell_in_grid[9].vertices[3]](0),
-                    vertex_in_grid[cell_in_grid[9].vertices[3]](1));
-            for (st i = 0; i < cell_in_grid.size(); ++i)
-            {
-                printf("%d %d %d %d %d\n", 
-                        i,
-                        cell_in_grid[i].vertices[0],
-                        cell_in_grid[i].vertices[1],
-                        cell_in_grid[i].vertices[2],
-                        cell_in_grid[i].vertices[3]
-                      );
-            };
-            fclose(F);
-        };
+        // {
+        //     FILE *F;
+        //     F = fopen("tria.gpd", "w");
+        //     for (st i = 0; i < vertex_in_grid.size(); ++i)
+        //     {
+        //         fprintf(F, "%f %f 0.0\n", vertex_in_grid[i](0), vertex_in_grid[i](1));
+        //     };
+        //     fclose(F);
+        // };
+        // {
+        //     FILE *F;
+        //     F = fopen("9.gpd", "w");
+        //     fprintf (F, "%f %f 0.0\n",
+        //             vertex_in_grid[cell_in_grid[9].vertices[0]](0),
+        //             vertex_in_grid[cell_in_grid[9].vertices[0]](1));
+        //     fprintf (F, "%f %f 0.0\n",
+        //             vertex_in_grid[cell_in_grid[9].vertices[1]](0),
+        //             vertex_in_grid[cell_in_grid[9].vertices[1]](1));
+        //     fprintf (F, "%f %f 0.0\n",
+        //             vertex_in_grid[cell_in_grid[9].vertices[2]](0),
+        //             vertex_in_grid[cell_in_grid[9].vertices[2]](1));
+        //     fprintf (F, "%f %f 0.0\n",
+        //             vertex_in_grid[cell_in_grid[9].vertices[3]](0),
+        //             vertex_in_grid[cell_in_grid[9].vertices[3]](1));
+        //     for (st i = 0; i < cell_in_grid.size(); ++i)
+        //     {
+        //         printf("%d %d %d %d %d\n", 
+        //                 i,
+        //                 cell_in_grid[i].vertices[0],
+        //                 cell_in_grid[i].vertices[1],
+        //                 cell_in_grid[i].vertices[2],
+        //                 cell_in_grid[i].vertices[3]
+        //               );
+        //     };
+        //     fclose(F);
+        // };
 
-        puts("111");
+        // puts("111");
         // dealii::GridReordering<2> ::reorder_cells (cell_in_grid);
-        puts("111");
+        // puts("111");
         // triangulation .create_triangulation_compatibility (
         triangulation .create_triangulation (
                 vertex_in_grid, cell_in_grid, dealii::SubCellData());
-        puts("111");
+        // puts("111");
     };
 
     // void make_edge_in_grid (
@@ -654,18 +654,18 @@ namespace CGALGridGenerator
 
             st type_border = 0;
             bool fl = false;
-            printf("n %ld\n", outer_border.size());
+            // printf("n %ld\n", outer_border.size());
             FOR(j, 0, outer_border.size())
             {
                 const arr<dealii::Point<2>, 2> segment = {
                     outer_border[j], outer_border[(j + 1) % 4]};
-                printf("(%f,%f) (%f,%f) (%f,%f) (%f,%f)\n",
-                        segment[0](0), segment[0](1),
-                        segment[1](0), segment[1](1),
-                        vertex_in_grid[index_1](0),
-                        vertex_in_grid[index_1](1),
-                        vertex_in_grid[index_3](0),
-                        vertex_in_grid[index_3](1));
+                // printf("(%f,%f) (%f,%f) (%f,%f) (%f,%f)\n",
+                //         segment[0](0), segment[0](1),
+                //         segment[1](0), segment[1](1),
+                //         vertex_in_grid[index_1](0),
+                //         vertex_in_grid[index_1](1),
+                //         vertex_in_grid[index_3](0),
+                //         vertex_in_grid[index_3](1));
 
                 if (
                         point_on_segment(vertex_in_grid[index_1], segment) and
@@ -676,7 +676,7 @@ namespace CGALGridGenerator
                     break;
                 };
             };
-            printf("olol %ld %d\n", type_border, fl);
+            // printf("olol %ld %d\n", type_border, fl);
 
             {
                 dealii::CellData<d1> cell;
@@ -789,13 +789,13 @@ namespace CGALGridGenerator
         // auto fc = cdt.incident_edges (cdt.infinite_vertex());
         CDT::Face_circulator fc = cdt.incident_faces (cdt.infinite_vertex());
         CDT::Face_circulator end_fc = fc;
-        printf("2.1.2.1\n");
+        // printf("2.1.2.1\n");
         FOR(i, 0, 9000)
         {
             st e = 3;
-            printf("2.1.2.2\n");
+            // printf("2.1.2.2\n");
             // if (fc->is_constrained(0)) e = 0;
-            printf("2.1.2.3\n");
+            // printf("2.1.2.3\n");
             // if (fc->is_constrained(1)) e = 1;
             // if (fc->is_constrained(2)) e = 2;
             for (st i = 0; i < 3; ++i)
@@ -825,10 +825,10 @@ namespace CGALGridGenerator
                 break;
             };
         };
-        printf("2.1.2.4\n");
-        printf("%d\n", border_on_cdt.size());
+        // printf("2.1.2.4\n");
+        // printf("%d\n", border_on_cdt.size());
         border_on_cdt .push_back (border_on_cdt.front()); 
-        printf("2.1.2.5\n");
+        // printf("2.1.2.5\n");
         // for (auto i : border_on_cdt)
         //     append_in_file("border_grid_cgal.gpd", 
         //             std::to_string(i.x()) +
@@ -1012,17 +1012,17 @@ namespace CGALGridGenerator
                 cdt.insert_constraint(vv.back(), vv.front());
             };
         };
-        printf("2.1.1\n");
+        // printf("2.1.1\n");
 
         add_border_to_domain (outer_border);
         add_constreins ();
 
         // CGAL::refine_Delaunay_mesh_2(cdt, Criteria( 0.125, 0.1 ));
         CGAL::refine_Delaunay_mesh_2(cdt, Criteria(/* 0.125, 0.1 */));
-        printf("2.1.2\n");
+        // printf("2.1.2\n");
 
         extract_border (cdt, border_on_cdt);
-        printf("2.1.3\n");
+        // printf("2.1.3\n");
     };
 
     void set_grid(
@@ -1102,13 +1102,13 @@ namespace CGALGridGenerator
     {
         CDT cdt;
         vec<CDT::Point> border_on_cdt;
-        printf("2.1\n");
+        // printf("2.1\n");
         create_grid_using_cgal_2(cdt, border_on_cdt, outer_border);
-        printf("2.2\n");
+        // printf("2.2\n");
 
         convert_to_dealii_format_without_domains(cdt, border_on_cdt,
                 triangulation, outer_border, type_outer_border);
-        printf("2.3\n");
+        // printf("2.3\n");
     };
 
 };

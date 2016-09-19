@@ -21,6 +21,7 @@ IncDirProjects = $(SupDirHome)
 IncDirDealII   = $(SupDirDealII)/include
 IncDirBoost    = $(SupDirDealII)/contrib/boost-1.49.0/include
 IncDirTBB      = $(SupDirDealII)/contrib/tbb/tbb30_104oss/include 
+IncDirExperiments = $(SupDirHome)/projects/experiments
 
 #==================================================LIBDIRS (Format: LibDir*)===#
 
@@ -107,7 +108,7 @@ Executable := $(addprefix $(ProjectDir)/$(ConfigurationName)/, $(Executable))
 #	@echo $(ObjDir)/Test1.o
 	
 $(Executable): $(Objects)
-	$(CXX) $(LFlags) $^ $(StaticLibs) -o $@ $(LibDirs) $(Libs) 2> /home/primat/projects/code.log 
+	$(CXX) $(LFlags) $^ /home/primat/projects/experiments/bloks/obj/cgal_grid_generator.o $(StaticLibs) -o $@ $(LibDirs) $(Libs) 2> /home/primat/projects/code.log 
 
 $(ObjDir)/%.o: $(SourcesDir)/%.cpp
 	mkdir -p $(dir $@)

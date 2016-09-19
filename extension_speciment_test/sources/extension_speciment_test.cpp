@@ -1,6 +1,7 @@
 #include "pch.h"
 
 #include "../../feminist/calculation_core/src/blocks/general/grid_generator/grid_generator.h"
+#include "../../bloks/src/grid_generator/grid_generator.h"
 
 #include "../../feminist/calculation_core/src/blocks/special/elastic_problem_tools/elastic_problem_tools.h"
 
@@ -260,7 +261,7 @@ void gen_laminate(dealii::Triangulation< 3 > &triangulation,
 arr<dbl, 3> calc_sum_move(
         dealii::DoFHandler<3>& dof_h, 
         dealii::Vector<dbl>& solution, 
-        arr<dbl, 3> size)
+        const arr<dbl, 3>& size)
 {
     enum {x, y, z};
     cdbl eps = 1.0e-8;
@@ -308,12 +309,19 @@ arr<dbl, 3> calc_sum_move(
             };
         };
     };
+
+    std::cout << sum[x] << " " <<  sum[y] << " " <<  sum[z] << std::endl;
+    sum[x] /= size[y] * size[z];
+    sum[y] /= size[x] * size[z];
+    sum[z] /= size[x] * size[y];
+    std::cout << sum[x] << " " <<  sum[y] << " " <<  sum[z] << std::endl;
+
     return sum;
 };
 
 arr<dbl, 3> solve_cpeciment_extension_test (
         cst direction, 
-        const arr<dbl, 3> size, 
+        const arr<dbl, 3>& size, 
         cdbl P,
         vec<ATools::FourthOrderTensor>& C, 
         Domain<3>& domain)
@@ -434,6 +442,63 @@ arr<dbl, 3> solve_cpeciment_extension_test (
     // return arr<dbl, 3>{0.0, 0.0, 0.0};
 };
 
+    void gen_circle_in_square_true_ordered(
+            dealii::Triangulation<2> &tria2d,
+            cdbl R,
+            cst level_density)
+    {
+        enum {x, y, z};
+        cdbl eps = 1.0e-8;
+
+        dealii::Point<2> center(0.5, 0.5);
+
+        dealii::GridGenerator ::hyper_cube (tria2d, 0.0, 1.0);
+        tria2d .refine_global (level_density);
+
+        cdbl max_dist = std::sqrt(std::pow(1.0 / std::pow(2.0, level_density), 2.0) * 2.0) / 2.0;
+
+        auto face = tria2d.begin_active_face();
+        auto endf = tria2d.end_face();
+        for (; face != endf; ++face)
+        {
+            for (st i = 0; i < 2; ++i)
+            {
+                auto p = face->vertex(i);
+                cdbl r = center.distance(p); 
+                cdbl dist = std::abs(r - R);
+                if (dist < max_dist)
+                {
+                    face->vertex(i) -= center;
+                    face->vertex(i) *= R/r;
+                    face->vertex(i) += center;
+                };
+            };
+        };
+
+        {
+            auto cell = tria2d .begin_active();
+            auto end_cell = tria2d .end();
+            for (; cell != end_cell; ++cell)
+            {
+                cell->set_material_id(0);
+                if (center.distance(cell->center()) < R)
+                    // if (
+                    //         (std::abs(center[i](x) - cell->center()(x)) < Rc) and
+                    //         (std::abs(center[i](y) - cell->center()(y)) < Rc)
+                    //         )
+                {
+                    cell->set_material_id(1);
+                };
+            };
+        };
+
+        {
+            std::ofstream out ("grid.eps");
+            dealii::GridOut grid_out;
+            grid_out.write_eps (tria2d, out);
+        };
+    };
+
 int main()
 {
     enum {x, y, z};
@@ -448,27 +513,112 @@ int main()
     
     Domain<3> domain;
     cst n_slices = 5;
-    cst n_ref = 6;
+    cst n_ref = 4;
+    cst n_p = 16;
     cst n_cell_ref = 2;
-    cdbl R = sqrt(0.4 / M_PI);//0.45;
+    cst n_cells = 32;
+    cdbl R = sqrt(0.7 / M_PI) / 4.0;//0.45;
+    std::cout << "\x1B[36m R = " << R << "\x1B[0m     File: " << __FILE__ << " Line: " << __LINE__ << std::endl; //DEBAG OUT
     cdbl H = 10.0;
-    GridGenerator::gen_cylinder_true_ordered_speciment(domain.grid, R, n_cell_ref, n_ref, n_slices, H);
+    cdbl W = n_cells/4.0;
+    // GridGenerator::gen_cylinder_true_ordered_speciment(domain.grid, R, n_cell_ref, n_ref, n_slices, H);
+    vec<dealii::Point<2>> center;
+    for (st i = 0; i < n_cells; ++i)
+    {
+        // center .push_back(dealii::Point<2>(0.25+i*0.5, 0.25));
+        // center .push_back(dealii::Point<2>(0.25+i*0.5, 0.75));
+        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.125));
+        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.375));
+        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.625));
+        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.875));
+    };
+
+    const arr<dbl, 3> size = {W, 1.0, H};
+    GridGenerator::set_cylinder_in_rectangular_cgal(domain.grid, size, center, R, n_p, n_slices);
+    // GridGenerator::gen_cylinder_true_ordered_speciment_for_x_extension(domain.grid, R, n_cells, n_ref, n_slices, H, W);
     // gen_laminate(domain.grid, 0.5, n_slices, n_ref);
     // gen_laminate(domain.grid, 1, n_ref, H, n_slices);
     // dealii::GridGenerator::hyper_cube(domain.grid, 0.0, 1.0);
     // domain.grid .refine_global (2);
     
-    arr<dbl, 3> size = {1.0, 1.0, H};
+    // arr<dbl, 3> size = {W, 1.0, H};
     cdbl P = 1.0;
-    auto move = solve_cpeciment_extension_test (z, size, P, C, domain);
-    std::cout << move[x] << " " <<  move[y] << " " <<  move[z] << std::endl;
-    // std::cout << H/(move[z]*2.0) << std::endl;
-    std::cout << "Ez = " << H / (2.0 * move[z]) 
-        << " ν_zx = " << -move[x] / move[z] << " ν_zy = " << -move[y] / move[z] << std::endl;
-    cdbl real_coef  = (R*R*M_PI*E2 + (1.0 - R*R*M_PI)*E1);
-    std::cout << real_coef << std::endl;
-    std::cout << std::abs(10.0/(move[z]*2.0) - real_coef) / real_coef * 100 << "%"  << std::endl;
-    // std::cout << -(H/(move[z]*2.0))*(move[x]*2.0) << std::endl;
+    auto move = solve_cpeciment_extension_test (x, size, P, C, domain);
+    // std::cout << move[x] << " " <<  move[y] << " " <<  move[z] << std::endl;
+    // // std::cout << H/(move[z]*2.0) << std::endl;
+    // std::cout << "Ez = " << H / (2.0 * move[z]) 
+    //     << " ν_zx = " << -move[x] / move[z] << " ν_zy = " << -move[y] / move[z] << std::endl;
+    // cdbl real_coef  = (R*R*M_PI*E2 + (1.0 - R*R*M_PI)*E1);
+    // std::cout << real_coef << std::endl;
+    // std::cout << std::abs(10.0/(move[z]*2.0) - real_coef) / real_coef * 100 << "%"  << std::endl;
+
+    std::cout
+        << "Ex = " << W / (2.0 * move[x]) 
+        << " ν_xz = " << -(move[z] * W) / (move[x] * H)
+        << " ν_xy = " << -(move[y] * W) / (move[x] * 1) << std::endl;
+
+        // dealii::Triangulation<2> tria2d;
+        // // dealii::GridGenerator ::hyper_cube (tria2d, 0.0, 1.0);
+        // gen_circle_in_square_true_ordered(tria2d, R, n_ref);
+        // // dealii::GridGenerator ::hyper_rectangle(tria2d, dealii::Point<2>(0.0, 0.0), dealii::Point<2>(W, 1.0));
+        // // tria2d .refine_global (1);
+        // std::cout << tria2d.n_vertices() << std::endl;
+        // std::cout << tria2d.n_used_vertices() << std::endl;
+        // auto v = tria2d.get_vertices();
+        //
+        // vec<dealii::CellData<2>> c (tria2d.n_active_cells(), dealii::CellData<2>());
+        // {
+        //     st cn = 0;
+        //     auto cell = tria2d.begin_active();
+        //     auto end_cell = tria2d.end();
+        //     for (; cell != end_cell; ++cell)
+        //     {
+        //         for (st i = 0; i < 4; ++i)
+        //         {
+        //             c[cn].vertices[i] = cell->vertex_index(i);
+        //         };
+        //         ++cn;
+        //     };
+        // };
+        // cst c_size = c.size();
+        // for (st i = 0; i < c_size; ++i)
+        // {
+        //     dealii::CellData<2> new_c;
+        //     for (st j = 0; j < 4; ++j)
+        //     {
+        //         auto new_v = v[c[i].vertices[j]];
+        //         new_v(0) += 1.0;
+        //         st indx = 0;
+        //         bool new_v_exist = false;
+        //         for (st k = 0; k < v.size(); ++k)
+        //         {
+        //             if (v[k].distance(new_v) < 1.0e-8)
+        //             {
+        //                 indx = k;
+        //                 new_v_exist = true;
+        //                 break;
+        //             };
+        //         };
+        //         if (not new_v_exist)
+        //         {
+        //             v .push_back(new_v);
+        //             indx = v.size()-1;
+        //         };
+        //         new_c.vertices[j] = indx;
+        //     };
+        //     new_c .material_id = c[i] .material_id;
+        //     c .push_back(new_c);
+        // };
+        // std::cout << v.size() << std::endl;
+        // std::cout << c.size() << std::endl;
+        // dealii::Triangulation<2> tria2d_new;
+        // tria2d_new.create_triangulation(v, c, dealii::SubCellData());
+        // {
+        //     std::ofstream out ("grid-speciment.eps");
+        //     dealii::GridOut grid_out;
+        //     grid_out.write_eps (tria2d_new, out);
+        // };
+
 
     return 0;
 }
