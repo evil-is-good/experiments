@@ -272,6 +272,7 @@ arr<dbl, 3> calc_sum_move(
 
         dealii::FEFaceValues<3> fe_values (dof_h.get_fe(), quadrature_formula,
                 dealii::update_values | dealii::update_quadrature_points | dealii::update_JxW_values);
+        std::cout << "123342" << std::endl;
 
         cst n_q_points = quadrature_formula.size();
         cst dofs_per_cell = 8;//8;//fe_values.get_fe().dofs_per_cell;
@@ -310,21 +311,21 @@ arr<dbl, 3> calc_sum_move(
         };
     };
 
-    std::cout << sum[x] << " " <<  sum[y] << " " <<  sum[z] << std::endl;
+    // std::cout << sum[x] << " " <<  sum[y] << " " <<  sum[z] << std::endl;
     sum[x] /= size[y] * size[z];
     sum[y] /= size[x] * size[z];
     sum[z] /= size[x] * size[y];
-    std::cout << sum[x] << " " <<  sum[y] << " " <<  sum[z] << std::endl;
+    // std::cout << sum[x] << " " <<  sum[y] << " " <<  sum[z] << std::endl;
 
     return sum;
 };
 
-arr<dbl, 3> solve_cpeciment_extension_test (
+dealii::Vector<dbl>&& solve_cpeciment_extension_test (
         cst direction, 
         const arr<dbl, 3>& size, 
         cdbl P,
         vec<ATools::FourthOrderTensor>& C, 
-        Domain<3>& domain)
+        Domain<3>& domain)//, vec<dbl>& solution)
 {
     enum {x, y, z};
 
@@ -438,8 +439,9 @@ arr<dbl, 3> solve_cpeciment_extension_test (
     EPTools ::print_move_slice (slae.solution, domain.dof_handler, ort[d] + "/move_slice_z_05.gpd", z, size[z] / 2.0);
     EPTools ::print_move_slice (slae.solution, domain.dof_handler, ort[d] + "/move_slice_z_1.gpd", z, size[z]);
 
-    return calc_sum_move(domain.dof_handler, slae.solution, size);
-    // return arr<dbl, 3>{0.0, 0.0, 0.0};
+    // return calc_sum_move(domain.dof_handler, slae.solution, size);
+    // solution .resize(slae.solution.size());
+    return std::move(slae.solution);
 };
 
     void gen_circle_in_square_true_ordered(
@@ -503,10 +505,10 @@ int main()
 {
     enum {x, y, z};
 
-    cdbl E1 = 0.6;
-    cdbl E2 = 60.0;
-    // cdbl E1 = 1.0;
-    // cdbl E2 = 1.0;
+    // cdbl E1 = 0.6;
+    // cdbl E2 = 60.0;
+    cdbl E1 = 1.0;
+    cdbl E2 = 10.0;
     vec<ATools::FourthOrderTensor> C(2);
     EPTools ::set_isotropic_elascity{yung : E1, puasson : 0.35}(C[0]);
     EPTools ::set_isotropic_elascity{yung : E2, puasson : 0.20}(C[1]);
@@ -514,48 +516,67 @@ int main()
     Domain<3> domain;
     cst n_slices = 5;
     cst n_ref = 4;
-    cst n_p = 16;
+    cst n_p = 4;
     cst n_cell_ref = 2;
     cst n_cells = 32;
-    cdbl R = sqrt(0.7 / M_PI) / 4.0;//0.45;
+    cdbl R = 2.5;//sqrt(0.7 / M_PI) / 4.0;//0.45;
     std::cout << "\x1B[36m R = " << R << "\x1B[0m     File: " << __FILE__ << " Line: " << __LINE__ << std::endl; //DEBAG OUT
     cdbl H = 10.0;
     cdbl W = n_cells/4.0;
     // GridGenerator::gen_cylinder_true_ordered_speciment(domain.grid, R, n_cell_ref, n_ref, n_slices, H);
     vec<dealii::Point<2>> center;
-    for (st i = 0; i < n_cells; ++i)
-    {
-        // center .push_back(dealii::Point<2>(0.25+i*0.5, 0.25));
-        // center .push_back(dealii::Point<2>(0.25+i*0.5, 0.75));
-        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.125));
-        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.375));
-        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.625));
-        center .push_back(dealii::Point<2>(0.125+i*0.25, 0.875));
-    };
 
-    const arr<dbl, 3> size = {W, 1.0, H};
-    GridGenerator::set_cylinder_in_rectangular_cgal(domain.grid, size, center, R, n_p, n_slices);
+    // for (st i = 0; i < n_cells; ++i)
+    // {
+    //     center .push_back(dealii::Point<2>(0.125+i*0.25, 0.125));
+    //     center .push_back(dealii::Point<2>(0.125+i*0.25, 0.375));
+    //     center .push_back(dealii::Point<2>(0.125+i*0.25, 0.625));
+    //     center .push_back(dealii::Point<2>(0.125+i*0.25, 0.875));
+    // };
+    //
+    // const arr<dbl, 3> size = {W, 1.0, H};
+    // GridGenerator::set_cylinder_in_rectangular_cgal(domain.grid, size, center, R, n_p, n_slices);
+    //
+    // cdbl P = 1.0;
+    // arr<dbl, 3> marks = {W-2.0, 1.0, H};
+    // auto move = solve_cpeciment_extension_test (x, marks, P, C, domain);
+    //
+    // std::cout << move[x] << " " <<  move[y] << " " <<  move[z] << std::endl;
+    //
+    // std::cout
+    //     << "Ex = " << W / (2.0 * move[x]) 
+    //     << " ν_xz = " << -(move[z] * W) / (move[x] * H)
+    //     << " ν_xy = " << -(move[y] * W) / (move[x] * 1) << std::endl;
+
+    center .push_back(dealii::Point<2>(0.5, 0.5));
+    dealii::Triangulation<2> tile, tria2d; 
+    cst n_cell_x = 4;
+    cst n_cell_y = 1;
+    GridGenerator::set_circles_in_rectangular_cgal(tile, arr<dbl, 3>{1.0, 1.0, 1.0}, center, R, n_p);
+    GridGenerator::mesh_tiling_2d (tria2d, tile, arr<dbl, 2>{1.0, 1.0}, n_cell_x, n_cell_y);
+    GridGenerator::extrude_triangulation (tria2d, n_slices, H, domain.grid);
+    {
+        std::ofstream out ("grid-final.vtk");
+        dealii::GridOut grid_out;
+        grid_out.write_vtk (domain.grid, out);
+    };
+    const arr<dbl, 3> size = {n_cell_x*1.0, n_cell_y*1.0, H};
+    cdbl q = 1.0;
+    auto solution = solve_cpeciment_extension_test(z, size, q, C, domain);
+
+    // const arr<dbl, 3> marks = size;
+    // auto move = calc_sum_move(domain.dof_handler, solution, marks);
+    // std::cout << move[x] << " " <<  move[y] << " " <<  move[z] << std::endl;
+    // std::cout
+    //     << "Ex = " << W / (2.0 * move[x]) 
+    //     << " ν_xz = " << -(move[z] * W) / (move[x] * H)
+    //     << " ν_xy = " << -(move[y] * W) / (move[x] * 1) << std::endl;
+
     // GridGenerator::gen_cylinder_true_ordered_speciment_for_x_extension(domain.grid, R, n_cells, n_ref, n_slices, H, W);
     // gen_laminate(domain.grid, 0.5, n_slices, n_ref);
     // gen_laminate(domain.grid, 1, n_ref, H, n_slices);
     // dealii::GridGenerator::hyper_cube(domain.grid, 0.0, 1.0);
     // domain.grid .refine_global (2);
-    
-    // arr<dbl, 3> size = {W, 1.0, H};
-    cdbl P = 1.0;
-    auto move = solve_cpeciment_extension_test (x, size, P, C, domain);
-    // std::cout << move[x] << " " <<  move[y] << " " <<  move[z] << std::endl;
-    // // std::cout << H/(move[z]*2.0) << std::endl;
-    // std::cout << "Ez = " << H / (2.0 * move[z]) 
-    //     << " ν_zx = " << -move[x] / move[z] << " ν_zy = " << -move[y] / move[z] << std::endl;
-    // cdbl real_coef  = (R*R*M_PI*E2 + (1.0 - R*R*M_PI)*E1);
-    // std::cout << real_coef << std::endl;
-    // std::cout << std::abs(10.0/(move[z]*2.0) - real_coef) / real_coef * 100 << "%"  << std::endl;
-
-    std::cout
-        << "Ex = " << W / (2.0 * move[x]) 
-        << " ν_xz = " << -(move[z] * W) / (move[x] * H)
-        << " ν_xy = " << -(move[y] * W) / (move[x] * 1) << std::endl;
 
         // dealii::Triangulation<2> tria2d;
         // // dealii::GridGenerator ::hyper_cube (tria2d, 0.0, 1.0);

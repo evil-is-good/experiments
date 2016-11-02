@@ -717,73 +717,6 @@ namespace CGALGridGenerator
                       edge_in_grid);
     };
 
-    enum class cguc_type
-    {
-        Default
-    };
-    template <cguc_type type/*  = cguc_type::Default */>
-        void create_grid_using_cgal(CDT &cdt,
-                const vec<prmt::Point<2>> &outer_border,
-                const vec<prmt::Point<2>> &inner_border)
-        {};
-
-    // void insert_polygon(CDT& cdt, const CGAL::Polygon_2<K>& polygon){
-    //     if ( polygon.is_empty() ) return;
-    //     CDT::Vertex_handle v_prev=cdt.insert(*CGAL::cpp0x::prev(polygon.vertices_end()));
-    //     for (auto vit=polygon.vertices_begin();
-    //             vit!=polygon.vertices_end();++vit)
-    //     {
-    //         CDT::Vertex_handle vh=cdt.insert(*vit);
-    //         cdt.insert_constraint(vh,v_prev);
-    //         v_prev=vh;
-    //     }
-    // }
-
-    template <>
-        void create_grid_using_cgal<cguc_type::Default> (CDT &cdt,
-                const vec<prmt::Point<2>> &outer_border,
-                const vec<prmt::Point<2>> &inner_border)
-        {
-            std::vector<std::vector<Vertex_handle> > vec_of_domains;
-
-            auto add_border_to_domain = [&vec_of_domains, &cdt] (vec<prmt::Point<2>> border)
-            {
-                std::vector<Vertex_handle> vec_of_vertices;
-                for(auto p : border)
-                    vec_of_vertices.push_back(cdt.insert(CDT::Point(p.x(), p.y())));
-
-                vec_of_domains.push_back(vec_of_vertices);
-            };
-
-            add_border_to_domain (inner_border);
-            add_border_to_domain (outer_border);
-            // 
-            for(auto it = vec_of_domains.begin(); it != vec_of_domains.end(); ++it) 
-            {
-                // auto it = vec_of_domains.begin();
-                // ++it;
-                for(auto vit = it->begin() + 1; vit != it->end(); ++vit)
-                {
-                    cdt.insert_constraint( *(vit - 1), *vit );
-                }
-                cdt.insert_constraint( *( it->end() - 1), *( it->begin() ) );
-            }
-
-            std::list<CDT::Point> list_of_seeds;
-            list_of_seeds.push_back(CDT::Point(0.5, 0.5));
-            // // std::list<Point> list_of_seeds_1;
-            // // list_of_seeds_1.push_back(Point(0.5, 0.5));
-            // // list_of_seeds_1.push_back(Point(0.2, 0.2));
-            // // std::list<Point> list_of_seeds_2;
-            // // list_of_seeds_2.push_back(Point(0.5, 0.5));
-
-            CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),
-                    Criteria( 0.125, 0.1 ), true);
-            CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),
-                    Criteria(0.125, 0.1));
-
-        };
-
     void extract_border (const CDT &cdt, vec<CDT::Point> &border_on_cdt)
     {
         // auto fc = cdt.incident_edges (cdt.infinite_vertex());
@@ -837,115 +770,7 @@ namespace CGALGridGenerator
         //             " 0.0\n"); 
     };
 
-    void create_grid_using_cgal_1 (CDT &cdt,
-            vec<CDT::Point> &border_on_cdt,
-            const vec<prmt::Point<2>> &outer_border,
-            const vec<prmt::Point<2>> &inner_border)
-    {
-        // CGAL::Polygon_2<K> polygon[2];
-
-        // for (auto p : outer_border)
-        //     polygon[0] .push_back (CDT::Point(p.x(), p.y()));
-        // for (auto p : inner_border)
-        //     polygon[1] .push_back (CDT::Point(p.x(), p.y()));
-
-        // insert_polygon (cdt, polygon[0]);
-        // insert_polygon (cdt, polygon[1]);
-        std::vector<std::vector<Vertex_handle> > vec_of_domains;
-
-        auto add_border_to_domain = [&vec_of_domains, &cdt] (vec<prmt::Point<2>> border)
-        {
-            std::vector<Vertex_handle> vec_of_vertices;
-            for(auto p : border)
-                vec_of_vertices.push_back(cdt.insert(CDT::Point(p.x(), p.y())));
-
-            vec_of_domains.push_back(vec_of_vertices);
-        };
-
-        add_border_to_domain (inner_border);
-        add_border_to_domain (outer_border);
-        // 
-        for(auto it = vec_of_domains.begin(); it != vec_of_domains.end(); ++it) 
-        {
-            // auto it = vec_of_domains.begin();
-            // ++it;
-            for(auto vit = it->begin() + 1; vit != it->end(); ++vit)
-            {
-                cdt.insert_constraint( *(vit - 1), *vit );
-            }
-            cdt.insert_constraint( *( it->end() - 1), *( it->begin() ) );
-        }
-
-        // for (auto e = cdt.finite_edges_begin(); e != cdt.finite_edges_end(); ++e)
-        // {
-        //     cdt.is_constrained(CDT::Edge(e));
-        // };
-        // 
-        // create_file("border_grid_cgal.gpd");
-        // for (auto i : border)
-        // i.first->is_in_domain();
-        // i.first->vertex(0);
-        // append_in_file("border_grid_cgal.gpd", 
-        //         std::to_string(i.first->vertex(2)->point().x()) +
-        //         " " +
-        //         std::to_string(i.first->vertex(2)->point().y()) +
-        //         "\n"); 
-
-        std::list<CDT::Point> list_of_seeds;
-        list_of_seeds.push_back(CDT::Point(0.5, 0.5));
-        // // std::list<Point> list_of_seeds_1;
-        // // list_of_seeds_1.push_back(Point(0.5, 0.5));
-        // // list_of_seeds_1.push_back(Point(0.2, 0.2));
-        // // std::list<Point> list_of_seeds_2;
-        // // list_of_seeds_2.push_back(Point(0.5, 0.5));
-
-        CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),
-                Criteria(/*  0.125, 0.1 */), true);
-        CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),
-                Criteria(/* 0.125, 0.1 */));
-        // vec<CDT::Edge> border;
-        // // CDT::Face_handle fh = cdt.infinite_face();
-        // CDT::Vertex_handle v;
-        // for(auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit)
-        // {
-        //     st e = 3;
-        //     if (fit->is_constrained(0)) e = 0;
-        //     if (fit->is_constrained(1)) e = 1;
-        //     if (fit->is_constrained(2)) e = 2;
-        //     if (e < 3)
-        //     {
-        //         append_in_file("border_grid_cgal.gpd", 
-        //                 std::to_string(fit->vertex((e+1) % 3)->point().x()) +
-        //                 " " +
-        //                 std::to_string(fit->vertex((e+1) % 3)->point().y()) +
-        //                 " 0.0\n"); 
-        //         append_in_file("border_grid_cgal.gpd", 
-        //                 std::to_string(fit->vertex((e+2) % 3)->point().x()) +
-        //                 " " +
-        //                 std::to_string(fit->vertex((e+2) % 3)->point().y()) +
-        //                 " 0.0\n"); 
-        //         v = fit->vertex((e + 2) % 3);
-        //         break;
-        //     };
-        // //     if (not fit->is_in_domain())
-        // //     for(int i = 0; i < 3; i++)
-        // // append_in_file("border_grid_cgal.gpd", 
-        // //         std::to_string(fit->vertex(i)->point().x()) +
-        // //         " " +
-        // //         std::to_string(fit->vertex(i)->point().y()) +
-        // //         " 0.0\n"); 
-        //     // for(int i = 0; i < 3; i++)
-        //     // {
-        //     // CDT::Edge e(fh,i);
-        //     // CDT::Face_handle n = fh->neighbor(i);
-        //     // if (cdt.is_constrained(e)) border.push_back(e);
-        //     // else fh = n;
-        //     // };
-        // };
-        extract_border (cdt, border_on_cdt);
-    };
-
-    void create_grid_using_cgal_1 (CDT &cdt,
+    void create_grid_using_cgal_with_includs (CDT &cdt,
             vec<CDT::Point> &border_on_cdt,
             const vec<prmt::Point<2>> &outer_border,
             const vec<vec<prmt::Point<2>>> &inner_border)
@@ -975,6 +800,42 @@ namespace CGALGridGenerator
             }
             cdt.insert_constraint( *( it->end() - 1), *( it->begin() ) );
         }
+
+        std::list<CDT::Point> list_of_seeds;
+        list_of_seeds.push_back(CDT::Point(0.5, 0.5));
+
+        CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),
+                Criteria(/*  0.125, 0.1 */), true);
+        CGAL::refine_Delaunay_mesh_2(cdt, list_of_seeds.begin(), list_of_seeds.end(),
+                Criteria(/* 0.125, 0.1 */));
+        extract_border (cdt, border_on_cdt);
+    };
+
+    void create_grid_using_cgal_with_constraints (CDT &cdt,
+            vec<CDT::Point> &border_on_cdt,
+            const vec<prmt::Point<2>> &border,
+            const vec<vec<prmt::Point<2>>> &constrains)
+    {
+        {
+            std::vector<Vertex_handle> vec_of_vertices;
+            for(auto p : border)
+                vec_of_vertices.push_back(cdt.insert(CDT::Point(p.x(), p.y())));
+            for(auto vit = vec_of_vertices.begin() + 1; vit != vec_of_vertices.end(); ++vit)
+            {
+                cdt.insert_constraint( *(vit - 1), *vit );
+            };
+            cdt.insert_constraint( *( vec_of_vertices.end() - 1), *( vec_of_vertices.begin() ) );
+        };
+        for (st i = 0; i < constrains.size(); ++i)
+        {
+            std::vector<Vertex_handle> vec_of_vertices;
+            for(auto p : constrains[i])
+                vec_of_vertices.push_back(cdt.insert(CDT::Point(p.x(), p.y())));
+            for(auto vit = vec_of_vertices.begin() + 1; vit != vec_of_vertices.end(); ++vit)
+            {
+                cdt.insert_constraint( *(vit - 1), *vit );
+            };
+        };
 
         std::list<CDT::Point> list_of_seeds;
         list_of_seeds.push_back(CDT::Point(0.5, 0.5));
@@ -1028,59 +889,19 @@ namespace CGALGridGenerator
     void set_grid(
             dealii::Triangulation< 2 > &triangulation,
             vec<prmt::Point<2>> outer_border,
-            vec<prmt::Point<2>> inner_border)
-    {
-        CDT cdt;
-        create_grid_using_cgal<cguc_type::Default>(
-                cdt, outer_border, inner_border);
-
-        // std::cout << "Number of vertices: " << cdt.number_of_vertices() << std::endl;
-        // std::cout << "Number of finite faces: " << cdt.number_of_faces() << std::endl;
-        // 
-        // size_t mesh_faces_counter = 0;
-
-        // // for(CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) 
-        // for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) 
-        // {
-        //     // if(fit->is_in_domain()) 
-        //     //     ++mesh_faces_counter;
-        // };
-        // 
-        // std::cout << "Number of faces in the mesh domain: " << mesh_faces_counter << std::endl;
-
-        convert_to_dealii_format(cdt, triangulation);
-    };
-
-    void set_grid(
-            dealii::Triangulation< 2 > &triangulation,
-            vec<prmt::Point<2>> outer_border,
-            vec<prmt::Point<2>> inner_border,
+            vec<vec<prmt::Point<2>>> inner_border,
             vec<st> type_outer_border)
     {
         CDT cdt;
         vec<CDT::Point> border_on_cdt;
-        create_grid_using_cgal_1(cdt, border_on_cdt,
+        create_grid_using_cgal_with_includs(cdt, border_on_cdt,
                 outer_border, inner_border);
-
-        // std::cout << "Number of vertices: " << cdt.number_of_vertices() << std::endl;
-        // std::cout << "Number of finite faces: " << cdt.number_of_faces() << std::endl;
-        // 
-        // size_t mesh_faces_counter = 0;
-
-        // // for(CDT::Finite_faces_iterator fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) 
-        // for (auto fit = cdt.finite_faces_begin(); fit != cdt.finite_faces_end(); ++fit) 
-        // {
-        //     // if (fit->is_in_domain()) 
-        //     //     ++mesh_faces_counter;
-        // };
-        // 
-        // std::cout << "Number of faces in the mesh domain: " << mesh_faces_counter << std::endl;
 
         convert_to_dealii_format(cdt, border_on_cdt,
                 triangulation, outer_border, type_outer_border);
     };
 
-    void set_grid(
+    void set_grid_with_constraints(
             dealii::Triangulation< 2 > &triangulation,
             vec<prmt::Point<2>> outer_border,
             vec<vec<prmt::Point<2>>> inner_border,
@@ -1088,7 +909,7 @@ namespace CGALGridGenerator
     {
         CDT cdt;
         vec<CDT::Point> border_on_cdt;
-        create_grid_using_cgal_1(cdt, border_on_cdt,
+        create_grid_using_cgal_with_constraints(cdt, border_on_cdt,
                 outer_border, inner_border);
 
         convert_to_dealii_format(cdt, border_on_cdt,

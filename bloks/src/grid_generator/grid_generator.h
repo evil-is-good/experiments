@@ -9,6 +9,11 @@ namespace CGALGridGenerator
             vec<prmt::Point<2>>,
             vec<vec<prmt::Point<2>>>,
             vec<st>);
+    extern void set_grid_with_constraints(
+            dealii::Triangulation< 2 >&,
+            vec<prmt::Point<2>>,
+            vec<vec<prmt::Point<2>>>,
+            vec<st>);
     extern int QWERTY;
 };
 
@@ -127,6 +132,27 @@ namespace GridGenerator
             give_circ(inclusion[i], n_points_on_includ_border, radius, prmt::Point<2>(center[i]));
         };
         CGALGridGenerator::set_grid(triangulation, border, inclusion, type_border);
+        {
+            std::ofstream out ("grid-cgal.eps");
+            dealii::GridOut grid_out;
+            grid_out.write_eps (triangulation, out);
+        };
+
+        {
+            auto cell = triangulation .begin_active();
+            auto end_cell = triangulation .end();
+            for (; cell != end_cell; ++cell)
+            {
+                cell->set_material_id(0);
+                for (st i = 0; i < center.size(); ++i)
+                {
+                    if (center[i].distance(cell->center()) < radius)
+                    {
+                        cell->set_material_id(1);
+                    };
+                };
+            };
+        };
     };
 
     void set_cylinder_cgal(dealii::Triangulation<3> &triangulation, vec<dealii::Point<2>>& center, 
@@ -136,30 +162,8 @@ namespace GridGenerator
 
         arr<dbl, 3> size = {1.0, 1.0, 1.0};
         set_circles_in_rectangular_cgal (tria2d, size, center, radius, n_points_on_includ_border); 
-        {
-            std::ofstream out ("grid-cgal.eps");
-            dealii::GridOut grid_out;
-            grid_out.write_eps (tria2d, out);
-        };
 
-        // dealii::Point<2> center (0.5, 0.5);
-        {
-            auto cell = tria2d .begin_active();
-            auto end_cell = tria2d .end();
-            for (; cell != end_cell; ++cell)
-            {
-                cell->set_material_id(0);
-                for (st i = 0; i < center.size(); ++i)
-                {
-                    if (center[i].distance(cell->center()) < radius)
-                    {
-                        cell->set_material_id(1);
-                    }
-                };
-            };
-        };
-
-        GridGenerator::extrude_triangulation (tria2d, n_slices, 1.0, triangulation);
+        GridGenerator::extrude_triangulation (tria2d, n_slices, size[2], triangulation);
     };
 
     void set_cylinder_in_rectangular_cgal(dealii::Triangulation<3> &triangulation,
@@ -170,30 +174,94 @@ namespace GridGenerator
         dealii::Triangulation<2> tria2d;
 
         set_circles_in_rectangular_cgal (tria2d, size, center, radius, n_points_on_includ_border); 
-        {
-            std::ofstream out ("grid-cgal.eps");
-            dealii::GridOut grid_out;
-            grid_out.write_eps (tria2d, out);
-        };
 
-        // dealii::Point<2> center (0.5, 0.5);
+        GridGenerator::extrude_triangulation (tria2d, n_slices, size[2], triangulation);
+    };
+
+    void mesh_tiling_2d (
+            dealii::Triangulation<2>& tria,
+            const dealii::Triangulation<2>& tile, 
+            const arr<dbl, 2>& tile_size, cst n_tile_x, cst n_tile_y)
+    {
+        enum {x, y, z};
+        std::cout << tile.n_vertices() << std::endl;
+
+        cst n_tiles = n_tile_x * n_tile_y;
+        cst n_tile_cells = tile.n_active_cells();
+
+        auto v_tile = tile.get_vertices();
+        vec<dealii::CellData<2>> c_tile (tile.n_active_cells(), dealii::CellData<2>());
         {
-            auto cell = tria2d .begin_active();
-            auto end_cell = tria2d .end();
-            for (; cell != end_cell; ++cell)
+            auto cell = tile.begin_active();
+            auto end_cell = tile.end();
+            for (st cn = 0; cell != end_cell; ++cell)
             {
-                cell->set_material_id(0);
-                for (st i = 0; i < center.size(); ++i)
+                for (st i = 0; i < 4; ++i)
                 {
-                    if (center[i].distance(cell->center()) < radius)
-                    {
-                        cell->set_material_id(1);
-                    }
+                    c_tile[cn].vertices[i] = cell->vertex_index(i);
                 };
+                ++cn;
             };
         };
 
-        GridGenerator::extrude_triangulation (tria2d, n_slices, size[2], triangulation);
+        decltype(v_tile) v_tria;
+        vec<dealii::CellData<2>> c_tria (tile.n_active_cells() * n_tiles, dealii::CellData<2>());
+
+        {
+            dbl shift_x = 0.0;
+            st cn_tria = 0;
+            for (st i = 0; i < n_tile_x ; ++i)
+            {
+                dbl shift_y = 0.0;
+                for (st j = 0; j < n_tile_y; ++j)
+                {
+                    for (st cn = 0; cn < c_tile.size(); ++cn)
+                    {
+                        dealii::CellData<2> new_c;
+                        for (st v = 0; v < 4; ++v)
+                        {
+                            auto new_v = v_tile[c_tile[cn].vertices[v]];
+
+                            new_v(x) += shift_x;
+                            new_v(y) += shift_y;
+
+                            st indx = 0;
+                            bool new_v_exist = false;
+                            for (st k = 0; k < v_tria.size(); ++k)
+                            {
+                                if (v_tria[k].distance(new_v) < 1.0e-8)
+                                {
+                                    indx = k;
+                                    new_v_exist = true;
+                                    break;
+                                };
+                            };
+                            if (not new_v_exist)
+                            {
+                                v_tria .push_back(new_v);
+                                indx = v_tria.size()-1;
+                            };
+                            new_c.vertices[v] = indx;
+                        };
+                        new_c .material_id = c_tile[cn] .material_id;
+                        c_tria[cn_tria] = new_c;
+                        ++cn_tria;
+                    };
+                    shift_y += tile_size[y];
+                };
+                shift_x += tile_size[x];
+            };
+        };
+        std::cout << "11111111111111" << std::endl;
+
+        std::cout << v_tria.size() << std::endl;
+        std::cout << c_tria.size() << std::endl;
+        tria.create_triangulation(v_tria, c_tria, dealii::SubCellData());
+        {
+            std::ofstream out ("grid-speciment.eps");
+            dealii::GridOut grid_out;
+            grid_out.write_eps (tria, out);
+        };
     };
 };
 #endif
