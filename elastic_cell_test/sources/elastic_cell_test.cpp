@@ -165,6 +165,17 @@ void set_ball_from_msh(dealii::Triangulation< 3 > &triangulation,
         auto end_cell = triangulation .end();
         for (; cell != end_cell; ++cell)
         {
+            // {
+            //     auto cell_2 = triangulation.begin_active();
+            //     for (; cell_2 != end_cell; ++cell_2)
+            //     {
+            //         if (cell->vertex(0).distance(cell2.vertex(0))
+            //         {
+            //             
+            //         };
+            //         
+            //     };
+            // };
             // for (st i = 0; i < 4; ++i)
             // {
             //     cell->vertex(i)(x) += 0.5;
@@ -177,6 +188,21 @@ void set_ball_from_msh(dealii::Triangulation< 3 > &triangulation,
             // }
             // else
             //     cell->set_material_id(0);
+        };
+    };
+    auto vs = triangulation.get_vertices();
+    for (st i = 0; i < vs.size(); ++i)
+    {
+        for (st j = 0; j < vs.size(); ++j)
+        {
+            if (
+                    (std::abs(vs[i](x) - vs[j](x)) < 1.0e-2) and
+                    (std::abs(vs[i](z) - vs[j](z)) < 1.0e-2) and 
+                    (i != j))
+            {
+                // std::cout << vs[i] << " " <<  vs[j] << " " <<  std::fixed << std::setprecision(15) << vs[i].distance(vs[j]) << std::endl;
+                std::cout << (vs[i](x) - vs[j](x)) << " " <<  std::fixed << std::setprecision(15) << (vs[i](z) - vs[j](z)) << std::endl;
+            };
         };
     };
 };
@@ -355,39 +381,39 @@ void solve_approx_cell_elastic_problem (cdbl E_i, cdbl pua_i, cdbl E_m, cdbl pua
 };
 
 // #pragma omp parallel for
-        for (st i = 0; i < 9; ++i)
-        {
-            arr<i32, 3> approximation = {number_task[i][x], number_task[i][y], number_task[i][z]};
-            st nu = st(number_task[i][3]);
-            slae.solution[0] = 0.0;
-            slae.rhsv[0] = 0.0;
-
-            OnCell::SourceVectorApprox<3> element_rhsv (approximation, nu,
-                    element_matrix.C, 
-                    H,
-                    cell_func,
-                    // &psi_func,
-                    domain.dof_handler.get_fe());
-            OnCell::Assembler::assemble_rhsv<3> (slae.rhsv[0], element_rhsv, domain.dof_handler, bows);
-
-            printf("problem %d %d %d %ld\n", number_task[i][x], number_task[i][y], number_task[i][z], nu);
-
-            dealii::SolverControl solver_control (500000, 1e-12);
-            dealii::SolverCG<> solver (solver_control);
-            solver.solve (
-                    slae.matrix,
-                    slae.solution[0],
-                    slae.rhsv[0]
-                    ,dealii::PreconditionIdentity()
-                    );
-            FOR(i, 0, slae.solution[0].size())
-                slae.solution[0][i] = slae.solution[0][bows.subst (i)];
-            FOR(i, 0, slae.rhsv[0].size())
-                slae.rhsv[0][i] = slae.rhsv[0][bows.subst (i)];
-
-            cell_func[approximation][nu] = slae.solution[0];
-            
-        };
+        // for (st i = 0; i < 9; ++i)
+        // {
+        //     arr<i32, 3> approximation = {number_task[i][x], number_task[i][y], number_task[i][z]};
+        //     st nu = st(number_task[i][3]);
+        //     slae.solution[0] = 0.0;
+        //     slae.rhsv[0] = 0.0;
+        //
+        //     OnCell::SourceVectorApprox<3> element_rhsv (approximation, nu,
+        //             element_matrix.C, 
+        //             H,
+        //             cell_func,
+        //             // &psi_func,
+        //             domain.dof_handler.get_fe());
+        //     OnCell::Assembler::assemble_rhsv<3> (slae.rhsv[0], element_rhsv, domain.dof_handler, bows);
+        //
+        //     printf("problem %d %d %d %ld\n", number_task[i][x], number_task[i][y], number_task[i][z], nu);
+        //
+        //     dealii::SolverControl solver_control (500000, 1e-12);
+        //     dealii::SolverCG<> solver (solver_control);
+        //     solver.solve (
+        //             slae.matrix,
+        //             slae.solution[0],
+        //             slae.rhsv[0]
+        //             ,dealii::PreconditionIdentity()
+        //             );
+        //     FOR(i, 0, slae.solution[0].size())
+        //         slae.solution[0][i] = slae.solution[0][bows.subst (i)];
+        //     FOR(i, 0, slae.rhsv[0].size())
+        //         slae.rhsv[0][i] = slae.rhsv[0][bows.subst (i)];
+        //
+        //     cell_func[approximation][nu] = slae.solution[0];
+        //     
+        // };
 
 
         printf("\n");
@@ -627,15 +653,18 @@ std::cout << "\x1B[36m tc.kappa_1(x,y,x) = " << tc.kappa_1(x,y,x) << "\x1B[0m   
                 file_name[arr<i32, 3>{0, 1, 0}][y], z, 0.5);
         EPTools ::print_move_slice (cell_func[arr<i32, 3>{0, 1, 0}][z], domain.dof_handler, 
                 file_name[arr<i32, 3>{0, 1, 0}][z], z, 0.5);
+        
+        EPTools::print_move<3>(cell_func[arr<i32, 3>{1, 0, 0}][x], domain.dof_handler,
+                "move.vtk", dealii::DataOutBase::vtk);
         // EPTools ::print_move_slice (cell_func[arr<i32, 3>{2, 0, 0}][x], domain.dof_handler, 
         //         "move_slice_approx_2x_x.gpd", z, 0.5);
         // EPTools ::print_move_slice (cell_func[arr<i32, 3>{0, 2, 0}][x], domain.dof_handler, 
         //         "move_slice_approx_2y_x.gpd", z, 0.5);
 
-        EPTools ::print_move_slice (cell_stress[arr<i32, 3>{1, 0, 0}][x][x], domain.dof_handler, 
-                "stress_slice_xxx.gpd", z, 0.5);
-EPTools ::print_move_slice (cell_stress[arr<i32, 3>{0, 1, 0}][y][x], domain.dof_handler, 
-        "stress_slice_yyx.gpd", z, 0.5);
+//         EPTools ::print_move_slice (cell_stress[arr<i32, 3>{1, 0, 0}][x][x], domain.dof_handler, 
+//                 "stress_slice_xxx.gpd", z, 0.5);
+// EPTools ::print_move_slice (cell_stress[arr<i32, 3>{0, 1, 0}][y][x], domain.dof_handler, 
+//         "stress_slice_yyx.gpd", z, 0.5);
 };
 
 int main()
@@ -653,8 +682,8 @@ int main()
     center .push_back(dealii::Point<2>(0.5, 0.5));
     arr<dbl, 3> size = {1.0, 1.0, 1.0};
     // GridGenerator::set_cylinder_in_rectangular_cgal(domain.grid, size, center, R, n_p, n_slices);
-    set_ball_true (domain.grid, R, n_ref);
-    // set_ball_from_msh (domain.grid, "ball_correct.msh", 0.25);
+    // set_ball_true (domain.grid, R, n_ref);
+    set_ball_from_msh (domain.grid, "ball_correct.msh", 0.25);
     cdbl Em = 0.6;
     cdbl Ei = 60.0;
     cdbl pm = 0.35;
