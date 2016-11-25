@@ -17,10 +17,11 @@ ProjectDir := /home/primat/projects/experiments/nikola_elastic_test_parallel
 
 #==================================================INCDIRS (Format: IncDir*)===#
 
-IncDirProjects = $(SupDirHome)
+#IncDirProjects = $(SupDirHome)
+IncDirPETSc   = /usr/lib/petscdir/3.4.2/include
 IncDirDealII   = $(SupDirDealII)/include
-IncDirBoost    = $(SupDirDealII)/contrib/boost-1.49.0/include
-IncDirTBB      = $(SupDirDealII)/contrib/tbb/tbb30_104oss/include 
+#IncDirBoost    = $(SupDirDealII)/contrib/boost-1.49.0/include
+#IncDirTBB      = $(SupDirDealII)/contrib/tbb/tbb30_104oss/include 
 IncDirExperiments = $(SupDirHome)/projects/experiments
 
 #==================================================LIBDIRS (Format: LibDir*)===#
@@ -34,7 +35,7 @@ Udir =
 #===========================================SUPPORTING DIRS (Format SupDir*)===#
 
 SupDirHome   = /home/primat
-SupDirDealII = /home/primat/deal.II
+SupDirDealII = /home/primat/deal.II_MPI
 
 #======================================================================FILES===#
 
@@ -46,7 +47,7 @@ DebugLibraryes    := deal_II.g tbb_debug
 
 # ReleaseLibraryes  := tbb gomp pthread gmpxx mpfr boost_thread-mt z
 
-ReleaseLibraryes  := deal_II tbb gomp pthread CGAL_Core CGAL gmpxx mpfr gmp boost_thread z
+ReleaseLibraryes  := deal_II tbb petsc HYPRE gomp pthread CGAL_Core CGAL gmpxx mpfr gmp boost_thread z
 
 # StaticLibs := /usr/lib/libCGAL_Core.a /usr/lib/libCGAL.a /usr/lib/x86_64-linux-gnu/libgmp.a /home/primat/deal.II/deal.II_bo_share/lib/libdeal_II.a 
 StaticLibs := 

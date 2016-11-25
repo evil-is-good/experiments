@@ -38,14 +38,14 @@
 #include "../../feminist/calculation_core/src/blocks/general/grid_generator/grid_generator.h"
 #include "../../bloks/src/grid_generator/grid_generator.h"
 
-#include "../../../calculation_core/src/blocks/special/nikola_problem/source/scalar/source_scalar.h"
-#include "../../../calculation_core/src/blocks/special/nikola_problem/source/vector/source_vector.h"
+#include "../../feminist/calculation_core/src/blocks/special/nikola_problem/source/scalar/source_scalar.h"
+#include "../../feminist/calculation_core/src/blocks/special/nikola_problem/source/vector/source_vector.h"
 
-#include "../../../calculation_core/src/blocks/special/feature_source/scalar/source_scalar.h"
-#include "../../../calculation_core/src/blocks/special/feature_source/vector/source_vector.h"
+#include "../../feminist/calculation_core/src/blocks/special/feature_source/scalar/source_scalar.h"
+#include "../../feminist/calculation_core/src/blocks/special/feature_source/vector/source_vector.h"
 
-#include "../../../calculation_core/src/blocks/special/poly_materials_source/scalar/source_scalar.h"
-#include "../../../calculation_core/src/blocks/special/poly_materials_source/vector/source_vector.h"
+#include "../../feminist/calculation_core/src/blocks/special/poly_materials_source/scalar/source_scalar.h"
+#include "../../feminist/calculation_core/src/blocks/special/poly_materials_source/vector/source_vector.h"
 
 void set_laminat(dealii::Triangulation< 2 > &triangulation,
         const std::function<dbl(dbl)> delimiter, cdbl lx, cdbl ly, cst np)
@@ -76,12 +76,12 @@ void set_laminat(dealii::Triangulation< 2 > &triangulation,
         std::vector< dealii::Point< 2 > > v (8);
 
         v[0]  = dealii::Point<2>(0.0, 0.0);
-        v[1]  = dealii::Point<2>(1.0, 0.0);
-        v[2]  = dealii::Point<2>(9.0, 0.0);
+        v[1]  = dealii::Point<2>(3.3333, 0.0);
+        v[2]  = dealii::Point<2>(6.6666, 0.0);
         v[3]  = dealii::Point<2>(10.0, 0.0);
         v[4]  = dealii::Point<2>(0.0, 1.0);
-        v[5]  = dealii::Point<2>(1.0, 1.0);
-        v[6]  = dealii::Point<2>(9.0, 1.0);
+        v[5]  = dealii::Point<2>(3.3333, 1.0);
+        v[6]  = dealii::Point<2>(6.6666, 1.0);
         v[7]  = dealii::Point<2>(10.0, 1.0);
 
         std::vector< dealii::CellData<2>> c; //(3, dealii::CellData<2>());
@@ -135,7 +135,7 @@ void set_laminat(dealii::Triangulation< 2 > &triangulation,
         // dealii::GridReordering<2> ::reorder_cells (c);
         triangulation .create_triangulation (v, c, dealii::SubCellData());
     };
-    triangulation.refine_global(10);
+    triangulation.refine_global(8);
     // for (st i = 0; i < 3; ++i)
     // {
     //     {
@@ -432,6 +432,7 @@ void solve_nikola_elastic_problem (dbl E_1, cdbl pua_1, cdbl E_2, cdbl pua_2, Do
 
     Assembler ::assemble_rhsv<2> (slae.rhsv, element_rhsv1, domain.dof_handler);
     Assembler ::assemble_rhsv<2> (slae.rhsv, element_rhsv2, domain.dof_handler);
+    EPTools ::print_move<2> (slae.rhsv, domain.dof_handler, "rhsv.gpd");
 
     {
         std::map<u32, dbl> list_boundary_values;
@@ -448,7 +449,8 @@ void solve_nikola_elastic_problem (dbl E_1, cdbl pua_1, cdbl E_2, cdbl pua_2, Do
                         cst v = cell->vertex_dof_index(i, x);
                         if (list_boundary_values.find(v) == list_boundary_values.end())
                         {
-                            list_boundary_values.insert(std::pair<u32, dbl>(v, 0.0));
+                            // list_boundary_values.insert(std::pair<u32, dbl>(v, 0.0));
+                            list_boundary_values.emplace(v, 0.0);
                         }; 
                     };
                     // if ((std::abs(cell->vertex(i)(x) - 0.5) < 1.0e-5) and (std::abs(cell->vertex(i)(y)) < 1.0e-5))
@@ -488,12 +490,18 @@ void solve_nikola_elastic_problem (dbl E_1, cdbl pua_1, cdbl E_2, cdbl pua_2, Do
             ,dealii::PreconditionIdentity()
             );
 
-    // EPTools ::print_move<2> (slae.solution, domain.dof_handler, "move-2.gpd");
-    arr<dealii::Vector<dbl>, 2> stress;
-    // get_nikola_stress (slae.solution, domain.dof_handler, element_matrix.C, stress);
-    get_nikola_mean_stress (slae.solution, domain.dof_handler, element_matrix.C, stress);
-    // EPTools ::print_move<2> (stress[x], domain.dof_handler, "stress_x-2.gpd");
-    // EPTools ::print_move<2> (stress[y], domain.dof_handler, "stress_y-2.gpd");
+    EPTools ::print_move<2> (slae.solution, domain.dof_handler, "move.gpd");
+    {
+        arr<dealii::Vector<dbl>, 2> stress;
+        get_nikola_stress (slae.solution, domain.dof_handler, element_matrix.C, stress);
+        EPTools ::print_move<2> (stress[x], domain.dof_handler, "stress_x_1.gpd");
+        EPTools ::print_move<2> (stress[y], domain.dof_handler, "stress_y_1.gpd");
+    };
+    {
+        arr<dealii::Vector<dbl>, 2> stress;
+        get_nikola_mean_stress (slae.solution, domain.dof_handler, element_matrix.C, stress);
+        EPTools ::print_move<2> (stress[x], domain.dof_handler, "stress_x_2.gpd");
+        EPTools ::print_move<2> (stress[y], domain.dof_handler, "stress_y_2.gpd");
     {
         dbl max = 0.0;
         for (st i = 0; i < stress[y].size(); ++i)
@@ -505,26 +513,28 @@ void solve_nikola_elastic_problem (dbl E_1, cdbl pua_1, cdbl E_2, cdbl pua_2, Do
         };
         std::cout << "\x1B[36m max = " << max << "\x1B[0m     File: " << __FILE__ << " Line: " << __LINE__ << std::endl; //DEBAG OUT
     };
+    };
 };
 
 int main()
 {
     enum {x, y, z};
     Domain<2> domain;
-    dealii::GridIn<2> gridin;
-    gridin.attach_triangulation(domain.grid);
-    // std::ifstream f("../sources/tst1.msh");
-    std::ifstream f("tst1_true.msh");
-    // // std::ifstream f("../sources/circle_R2_R1.msh");
-    gridin.read_msh(f);
-    std::ofstream out ("grid-igor.eps");
-    dealii::GridOut grid_out;
-    grid_out.write_eps (domain.grid, out);
-    // set_laminat(domain.grid, [](cdbl x){return 0.5;}, 10.0, 1.0, 20);
+    // dealii::GridIn<2> gridin;
+    // gridin.attach_triangulation(domain.grid);
+    // // std::ifstream f("../sources/tst1.msh");
+    // std::ifstream f("tst1_true.msh");
+    // // // std::ifstream f("../sources/circle_R2_R1.msh");
+    // gridin.read_msh(f);
+    // std::ofstream out ("grid-igor.eps");
+    // dealii::GridOut grid_out;
+    // grid_out.write_eps (domain.grid, out);
+    set_laminat(domain.grid, [](cdbl x){return 0.5;}, 10.0, 1.0, 20);
     // set_laminat(tria, [](cdbl x){return std::sin(x*M_PI)/4.0+0.5;}, 2.0, 1.0, 20);
     // dealii::GridGenerator::hyper_cube(domain.grid, 0.0, 1.0);
     // domain.grid.refine_global(3);
-    // solve_nikola_elastic_problem(1.0, 0.2, 10.0, 0.1,  domain);
-    // solve_nikola_elastic_problem(1.0, 0.1, 1.0, 0.1,  domain);
+    // solve_nikola_elastic_problem(1.0, 0.25, 10.0, 0.25,  domain);
+    solve_nikola_elastic_problem(1.0, 0.2, 10.0, 0.1,  domain);
+    // solve_nikola_elastic_problem(1.0, 0.1, 1.0, 0.1, domain);
     return 0;
 }
