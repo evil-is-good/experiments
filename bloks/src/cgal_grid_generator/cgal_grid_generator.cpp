@@ -130,7 +130,7 @@ namespace CGALGridGenerator
                     index_point[i].point_already_exist = true;
                 };
 
-            u8 mat_id = fit->is_in_domain() ? 0 : 1;
+            u8 mat_id = 0; //fit->is_in_domain() ? 0 : 1;
 
             auto add_cell = [&cell_in_grid, &index_point, mat_id] (arr<st, 4> &&indx) 
             {
@@ -149,12 +149,12 @@ namespace CGALGridGenerator
                 //         {.material_id = mat_id}}));
             };
 
-            // add_cell (arr<st, 4>{0, 3, 6, 5});
-            // add_cell (arr<st, 4>{1, 4, 6, 3});
-            // add_cell (arr<st, 4>{2, 5, 6, 4});
-            add_cell (arr<st, 4>{3, 0, 6, 5});
-            add_cell (arr<st, 4>{3, 1, 6, 4});
-            add_cell (arr<st, 4>{6, 4, 5, 2});
+            add_cell (arr<st, 4>{0, 3, 6, 5});
+            add_cell (arr<st, 4>{1, 4, 6, 3});
+            add_cell (arr<st, 4>{2, 5, 6, 4});
+            // add_cell (arr<st, 4>{3, 0, 6, 5});
+            // add_cell (arr<st, 4>{3, 1, 6, 4});
+            // add_cell (arr<st, 4>{6, 4, 5, 2});
         };
         // {
         //     FILE *F;
@@ -194,12 +194,11 @@ namespace CGALGridGenerator
         // };
 
         // puts("111");
-        // dealii::GridReordering<2> ::reorder_cells (cell_in_grid);
+        dealii::GridReordering<2> ::reorder_cells (cell_in_grid);
         // puts("111");
-        // triangulation .create_triangulation_compatibility (
-        triangulation .create_triangulation (
+        triangulation .create_triangulation_compatibility (
+        // triangulation .create_triangulation (
                 vertex_in_grid, cell_in_grid, dealii::SubCellData());
-        // puts("111");
     };
 
     // void make_edge_in_grid (
@@ -914,6 +913,19 @@ namespace CGALGridGenerator
 
         convert_to_dealii_format(cdt, border_on_cdt,
                 triangulation, outer_border, type_outer_border);
+    };
+
+    void set_grid_with_constraints(
+            dealii::Triangulation< 2 > &triangulation,
+            vec<prmt::Point<2>> outer_border,
+            vec<vec<prmt::Point<2>>> constraints)
+    {
+        CDT cdt;
+        vec<CDT::Point> border_on_cdt;
+        create_grid_using_cgal_with_constraints(cdt, border_on_cdt,
+                outer_border, constraints);
+
+        convert_to_dealii_format(cdt, triangulation);
     };
 
     void make_grid(

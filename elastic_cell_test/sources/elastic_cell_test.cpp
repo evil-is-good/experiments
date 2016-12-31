@@ -683,7 +683,8 @@ int main()
     arr<dbl, 3> size = {1.0, 1.0, 1.0};
     // GridGenerator::set_cylinder_in_rectangular_cgal(domain.grid, size, center, R, n_p, n_slices);
     // set_ball_true (domain.grid, R, n_ref);
-    set_ball_from_msh (domain.grid, "ball_correct.msh", 0.25);
+    // set_ball_from_msh (domain.grid, "ball_correct.msh", 0.25);
+    set_ball_from_msh (domain.grid, "cube_in_cube_correct.msh", 0.25);
     cdbl Em = 0.6;
     cdbl Ei = 60.0;
     cdbl pm = 0.35;

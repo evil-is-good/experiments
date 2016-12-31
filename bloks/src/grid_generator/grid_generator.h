@@ -14,6 +14,10 @@ namespace CGALGridGenerator
             vec<prmt::Point<2>>,
             vec<vec<prmt::Point<2>>>,
             vec<st>);
+    extern void set_grid_with_constraints(
+            dealii::Triangulation< 2 >&,
+            vec<prmt::Point<2>>,
+            vec<vec<prmt::Point<2>>>);
     extern int QWERTY;
 };
 

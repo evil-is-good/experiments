@@ -135,7 +135,7 @@ void set_laminat(dealii::Triangulation< 2 > &triangulation,
         // dealii::GridReordering<2> ::reorder_cells (c);
         triangulation .create_triangulation (v, c, dealii::SubCellData());
     };
-    triangulation.refine_global(8);
+    triangulation.refine_global(3);
     // for (st i = 0; i < 3; ++i)
     // {
     //     {
@@ -534,7 +534,8 @@ int main()
     // dealii::GridGenerator::hyper_cube(domain.grid, 0.0, 1.0);
     // domain.grid.refine_global(3);
     // solve_nikola_elastic_problem(1.0, 0.25, 10.0, 0.25,  domain);
-    solve_nikola_elastic_problem(1.0, 0.2, 10.0, 0.1,  domain);
+    // solve_nikola_elastic_problem(1.0, 0.2, 10.0, 0.1,  domain);
+    solve_nikola_elastic_problem(1.0, 0.2, 1.0, 0.1,  domain);
     // solve_nikola_elastic_problem(1.0, 0.1, 1.0, 0.1, domain);
     return 0;
 }
